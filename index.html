@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum de Dessins</title>
+    <style>
+        body {margin: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;}
+        header {background-color: #2c3e50; color: #fff; padding: 20px; text-align: center;}
+        nav {background-color: #34495e; overflow: hidden;}
+        nav a {float: left; display: block; color: #fff; text-align: center; padding: 14px 16px; text-decoration: none;}
+        nav a:hover {background-color: #3d566e;}
+        .container {max-width: 1000px; margin: 20px auto; padding: 0 20px;}
+        .topic, .author-item {display: flex; align-items: center; border-bottom: 1px solid #ddd; padding: 10px 0;}
+        .topic img, .author-item img {width: 100px; height: 100px; object-fit: cover; margin-right: 20px;}
+        .topic h3, .author-item h3 {margin: 0;}
+        .topic.locked img, .topic.locked h3 {filter: grayscale(100%);}
+        .topic.locked a {pointer-events: none; cursor: default; color: #999; text-decoration: none;}
+        .posts {display: flex; flex-direction: column; gap: 20px; margin-top: 20px;}
+        .post {display: flex; gap: 10px; width: 620px; height: 400px; background-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); padding: 10px; box-sizing: border-box;}
+        .post img.post-img {width: 600px; height: 400px; object-fit: cover;}
+        .post .author-pic {width: 50px; height: 50px; border-radius: 50%; object-fit: cover;}
+        .post-info {font-size: 14px; color: #555;}
+        .badges span {background-color: #e67e22; color: #fff; padding: 2px 6px; margin-right: 5px; border-radius: 3px; font-size: 12px;}
+        a { color: #2c3e50; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .participate-text {margin-top: 20px; font-size: 14px; color: #333;}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Forum de Dessins</h1>
+</header>
+
+<nav>
+    <a href="#" id="linkTopics">Topics</a>
+    <a href="#" id="linkAuthors">Auteurs</a>
+  <a href="https://xcode149.github.io/jacob-galea.github.com/">Qui est le createur du forum ?</a>
+</nav>
+
+<div class="container" id="mainContent"></div>
+
+<script>
+    const topics = [
+        {id:1, title:'Inauguration du forum !', cover:'https://via.placeholder.com/100', posts:[
+            
+            {
+                author: 'Jacob',
+                mail: 'jacob.galea.pro@gmail.com',
+                profile: 'https://upload.skybot.fr/uploads/694285c8947be6.32818090.jpeg',
+                image: 'https://upload.skybot.fr/uploads/69428525214051.07197669.jpeg',
+                time: '11:10',
+                badges: ['Admin']
+            }
+        ], locked:true},
+        {id:2, title:'Bavardages', cover:'https://via.placeholder.com/100', posts:[], locked:true},
+        {id:3, title:'Ameliorer son avatar...', cover:'https://upload.skybot.fr/uploads/69427e525ff170.29757601.jpeg', posts:[], locked:true}
+    ];
+
+    function showTopics(){
+        const main = document.getElementById('mainContent');
+        const topicsHTML = topics.map(t => {
+            const lockedClass = t.locked ? 'locked' : '';
+            return `<div class="topic ${lockedClass}">
+                        <img src="${t.cover}" alt="${t.title}">
+                        <h3><a href="#" ${t.locked ? '' : `onclick=\"showTopic(${t.id})\"`}>${t.title}</a></h3>
+                    </div>`;
+        }).join('');
+
+        main.innerHTML = topicsHTML + `
+            <div class="participate-text">
+                Pour participer, envoyer un mail à <strong>jacob.galea.pro@gmail.com</strong> et votre dessin sera posté et votre compte activé.
+                Pour poster après l'activation de votre compte, il faudra envoyer à Jacob vos posts avec le nom du topic et l'adresse mail avec laquelle vous avez activé votre compte.
+            </div>`;
+    }
+
+    function showTopic(id){
+        const topic = topics.find(t => t.id === id && !t.locked);
+        if(!topic) return;
+
+        const main = document.getElementById('mainContent');
+        const postsHTML = topic.posts.map(p => `
+            <div class="post">
+                <img class="author-pic" src="${p.profile}" alt="${p.author}">
+                <div>
+                    <img class="post-img" src="${p.image}" alt="Post">
+                    <div class="post-info">Auteur: <a href="#" onclick="showAuthor('${p.author}')">${p.author}</a> | Heure: ${p.time}</div>
+                </div>
+            </div>`).join('');
+
+        main.innerHTML = `
+            <h2>${topic.title}</h2>
+            <div class="posts">${postsHTML}</div>
+            <button onclick="showTopics()">Retour aux topics</button>`;
+    }
+
+    function showAuthors(){
+        const authorsMap = {};
+        topics.forEach(t => t.posts.forEach(p => authorsMap[p.author] = p));
+        const main = document.getElementById('mainContent');
+
+        main.innerHTML = Object.keys(authorsMap).map(name => {
+            const p = authorsMap[name];
+            return `<div class="author-item">
+                        <img src="${p.profile}" alt="${name}">
+                        <h3><a href="#" onclick="showAuthor('${name}')">${name}</a></h3>
+                    </div>`;
+        }).join('');
+    }
+
+    function showAuthor(name){
+        const posts = [];
+        topics.forEach(t => t.posts.forEach(p => { if(p.author === name) posts.push({...p, topic:t.title}); }));
+        const main = document.getElementById('mainContent');
+
+        main.innerHTML = `<h2>${name}</h2>
+            <div class="badges"><span>Artist</span></div>
+            <h3>Posts</h3>` + posts.map(p => `
+            <div class="post">
+                <img class="author-pic" src="${p.profile}" alt="${p.author}">
+                <div>
+                    <img class="post-img" src="${p.image}" alt="Post">
+                    <div class="post-info">Topic: ${p.topic} | Heure: ${p.time}</div>
+                </div>
+            </div>`).join('') + `<button onclick="showAuthors()">Retour aux auteurs</button>`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('linkTopics').addEventListener('click', e => { e.preventDefault(); showTopics(); });
+        document.getElementById('linkAuthors').addEventListener('click', e => { e.preventDefault(); showAuthors(); });
+        showTopics();
+    });
+</script>
+
+</body>
+</html>
